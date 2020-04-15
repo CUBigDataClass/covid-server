@@ -18,6 +18,7 @@ class DataBaseSetup():
         self.total_deaths_collection = self.corona_database["total_deaths"]
         self.new_cases_collection = self.corona_database["new_cases"]
         self.new_deaths_collection = self.corona_database["new_deaths"]
+        self.coords_collection = self.corona_database["coordinates"]
         #self.collections = {self.total_cases_collection: "https://covid.ourworldindata.org/data/ecdc/total_cases.csv", self.total_deaths_collection: "https://covid.ourworldindata.org/data/ecdc/total_deaths.csv", self.new_cases_collection: "https://covid.ourworldindata.org/data/ecdc/new_cases.csv", self.new_deaths_collection: "https://covid.ourworldindata.org/data/ecdc/new_deaths.csv"}
     def drop_data(self):
         result = self.total_cases_collection.remove()
@@ -30,6 +31,25 @@ class DataBaseSetup():
         data_json = json.loads(df.to_json(orient = 'records'))
         collection_name.insert(data_json)
 
+    def create_coord_collection(self):
+        df = pd.read_csv("https://raw.githubusercontent.com/albertyw/avenews/master/old/data/average-latitude-longitude-countries.csv")
+        df = df.drop('ISO 3166 Country Code', axis = 1) #drop extraneous country code
+        df.set_index("Country", inplace=True) #set index to country 
+
+        country_data = self.total_cases_collection.find_one()
+        for country, stat in country_data.items():
+            #print(country)
+            try:
+                latt = df.loc[country][1]
+                longg = df.loc[country][0]
+                #print(latt, longg)
+                self.coords.insert_one({country:[latt, longg]})
+                
+            except Exception:
+                #print("error, couldn't find: ", country)
+                pass
+            
+
     def call_loader(self):
         self.load_collections(self.total_cases_collection, "https://covid.ourworldindata.org/data/ecdc/total_cases.csv")
         self.load_collections(self.total_deaths_collection, "https://covid.ourworldindata.org/data/ecdc/total_deaths.csv")
@@ -39,38 +59,13 @@ class DataBaseSetup():
             #self.load_collections(collection, url)
     
     def print(self):
-        for post in self.new_cases_collection.find():
+        print(self.coords_collection.find_one())
+        for post in self.coords_collection.find():
             pprint.pprint(post)
     def tear_down(self):
         self.client.close()
 
 
-                
-'''
-
-mydb = client["corona_virus_data"]
-
-total_cases_col = mydb["total_cases"]
-total_cases_col.remove()
-fname = "https://covid.ourworldindata.org/data/ecdc/total_cases.csv"
-df = pd.read_csv(fname)
-#df.to_json('total_cases.json', orient = 'index')
-
-data_json = json.loads(df.to_json(orient='records'))
-#db_cm.remove()
-total_cases_col.insert(data_json)
-#print(type(json_obj))
-#print(json_obj)
-#print("type: ", type(df))
-#with open('total_cases.json') as f:
-    #file_data = json.load(f)
-
-#for row in file_data:
-    #print(row)
-#total_cases_col.insert_many(file_data)
-for post in total_cases_col.find():
-    pprint.pprint(post)
-client.close()'''
 
 def main():
     db_setup = DataBaseSetup()
@@ -78,7 +73,9 @@ def main():
     db_setup.setup_collections()
     db_setup.drop_data()
     db_setup.call_loader()
-    #db_setup.print()
+    
+    db_setup.create_coord_collection()
+    db_setup.print()
     db_setup.tear_down()
     #client.close()
 
