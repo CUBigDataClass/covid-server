@@ -38,15 +38,12 @@ class DataBaseSetup():
 
         country_data = self.total_cases_collection.find_one()
         for country, stat in country_data.items():
-            #print(country)
             try:
                 latt = df.loc[country][1]
                 longg = df.loc[country][0]
-                #print(latt, longg)
                 self.coords.insert_one({country:[latt, longg]})
                 
             except Exception:
-                #print("error, couldn't find: ", country)
                 pass
             
 
@@ -66,41 +63,6 @@ class DataBaseSetup():
     def tear_down(self):
         self.client.close()
 
-    def get_coords(self):
-        df = pd.read_csv("https://raw.githubusercontent.com/albertyw/avenews/master/old/data/average-latitude-longitude-countries.csv")
-        df = df.drop('ISO 3166 Country Code', axis = 1) #drop extraneous country code
-        df.set_index("Country", inplace=True) #set index to country 
-        #b = df.loc["Aruba"] #example locate 
-	return df
-
-
-
-db_setup = DataBaseSetup()
-db_setup.setup_client()
-db_setup.setup_collections()
-
-date_obj = db_setup.get_recent_date()
-
-def gen_json(df):
-    dic = {}
-
-    ctr = 0
-    for country_name in date_obj: 
-        try:
-            #print('thing: ',thing)
-            #print(df.loc[thing])
-            dic[ctr] = {"name": country_name,"coordinates": [df.loc[country_name][1], 
-                    df.loc[country_name][0]], "deaths": date_obj[country_name]}
-            #dic["countries"].append(obj)
-            ctr+=1
-        except Exception:
-            print("error, couldn't find: ", country_name)
-
-    with open ('countries.json', 'w') as outfile: 
-        json.dump(dic, outfile)
-
-
-
 def main():
     db_setup = DataBaseSetup()
     db_setup.setup_client()
@@ -112,6 +74,14 @@ def main():
     db_setup.print()
     db_setup.tear_down()
     #client.close()
+    #print('hi')
 
 
-main()
+if __name__ == '__main__':
+    main()
+
+
+
+
+
+    
