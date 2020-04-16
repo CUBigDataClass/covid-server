@@ -31,8 +31,8 @@ class DataBaseSetup():
     def load_collections(self, collection_name, url):
         df = pd.read_csv(url)
 
-        for row in df.iterrows():
-            print(row)
+        # for row in df.iterrows():
+        #     print(row)
 
         data_json = json.loads(df.to_json(orient = 'records'))
         #print(data_json)
@@ -48,7 +48,7 @@ class DataBaseSetup():
             try:
                 latt = df.loc[country][1]
                 longg = df.loc[country][0]
-                self.coords.insert_one({country:[latt, longg]})
+                self.coords_collection.insert_one({"name": {country:[latt, longg]}})
                 
             except Exception:
                 pass

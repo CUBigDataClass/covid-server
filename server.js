@@ -24,7 +24,7 @@ mongo.connect(url,  { useNewUrlParser: true, useUnifiedTopology: true }, functio
 
         // build query
         var dbo = db.db("coron_virus_data");
-        var query = {date: today};
+        var query = {date: "2020-04-15"};
 
         // get most recent data
         dbo.collection("total_case").find(query).toArray()
@@ -52,13 +52,15 @@ mongo.connect(url,  { useNewUrlParser: true, useUnifiedTopology: true }, functio
      // GET coordinates for country
      app.get('/coords', (req, res) => {
 
+        var result = {}
+
         // build query
         var dbo = db.db("coron_virus_data");
         
         // get coords from mongo
         dbo.collection("coordinates").find({}).toArray()
         .then(recentData => {
-            res.status(200).send(recentData); 
+            res.status(200).send(recentData);
         })
         .catch(error => console.error(error))
     }); 
