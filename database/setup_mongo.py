@@ -10,7 +10,7 @@ class DataBaseSetup():
     def setup_client(self):
         self.client = pymongo.MongoClient("mongodb://maurawins:coronabigdata@cluster0-shard-00-00-ud77s.gcp.mongodb.net:27017,cluster0-shard-00-01-ud77s.gcp.mongodb.net:27017,cluster0-shard-00-02-ud77s.gcp.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
         self.db = self.client.test
-        print(self.db)
+        #print(self.db)
         self.corona_database = self.client["coron_virus_data"]
 
     def setup_collections(self):
@@ -20,15 +20,22 @@ class DataBaseSetup():
         self.new_deaths_collection = self.corona_database["new_deaths"]
         self.coords_collection = self.corona_database["coordinates"]
         #self.collections = {self.total_cases_collection: "https://covid.ourworldindata.org/data/ecdc/total_cases.csv", self.total_deaths_collection: "https://covid.ourworldindata.org/data/ecdc/total_deaths.csv", self.new_cases_collection: "https://covid.ourworldindata.org/data/ecdc/new_cases.csv", self.new_deaths_collection: "https://covid.ourworldindata.org/data/ecdc/new_deaths.csv"}
+    
     def drop_data(self):
         result = self.total_cases_collection.remove()
-        print("removing...", result)
+        #print("removing...", result)
         self.total_deaths_collection.remove()
         self.new_cases_collection.remove()
         self.new_deaths_collection.remove()
+
     def load_collections(self, collection_name, url):
         df = pd.read_csv(url)
+
+        for row in df.iterrows():
+            print(row)
+
         data_json = json.loads(df.to_json(orient = 'records'))
+        #print(data_json)
         collection_name.insert(data_json)
 
     def create_coord_collection(self):
@@ -71,7 +78,7 @@ def main():
     db_setup.call_loader()
     
     db_setup.create_coord_collection()
-    db_setup.print()
+    #db_setup.print()
     db_setup.tear_down()
     #client.close()
     #print('hi')
