@@ -11,10 +11,10 @@ class DataBaseSetup():
         self.client = pymongo.MongoClient("mongodb://maurawins:coronabigdata@cluster0-shard-00-00-ud77s.gcp.mongodb.net:27017,cluster0-shard-00-01-ud77s.gcp.mongodb.net:27017,cluster0-shard-00-02-ud77s.gcp.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin&retryWrites=true&w=majority")
         self.db = self.client.test
         #print(self.db)
-        self.corona_database = self.client["coron_virus_data"]
+        self.corona_database = self.client["corona_virus_data"]
 
     def setup_collections(self):
-        self.total_cases_collection = self.corona_database["total_case"]
+        self.total_cases_collection = self.corona_database["total_cases"]
         self.total_deaths_collection = self.corona_database["total_deaths"]
         self.new_cases_collection = self.corona_database["new_cases"]
         self.new_deaths_collection = self.corona_database["new_deaths"]

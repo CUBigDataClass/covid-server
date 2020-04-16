@@ -13,7 +13,8 @@ mongo.connect(url,  { useNewUrlParser: true, useUnifiedTopology: true }, functio
     console.log("Connected to mongodb");
 
     // GET daily updates on case totals by country
-    app.get('/cases', (req, res) => {
+    app.get('/data', (req, res) => {
+        console.log(req.query)
 
         // get todays date
         var today = new Date();
@@ -23,11 +24,11 @@ mongo.connect(url,  { useNewUrlParser: true, useUnifiedTopology: true }, functio
         today = yyyy + '-' + mm + '-' + dd;
 
         // build query
-        var dbo = db.db("coron_virus_data");
+        var dbo = db.db("corona_virus_data");
         var query = {date: "2020-04-15"};
 
         // get most recent data
-        dbo.collection("total_case").find(query).toArray()
+        dbo.collection(req.query.type).find(query).toArray()
         .then(recentData => {
 
             var result = {}
@@ -55,7 +56,7 @@ mongo.connect(url,  { useNewUrlParser: true, useUnifiedTopology: true }, functio
         var result = {}
 
         // build query
-        var dbo = db.db("coron_virus_data");
+        var dbo = db.db("corona_virus_data");
         
         // get coords from mongo
         dbo.collection("coordinates").find({}).toArray()
