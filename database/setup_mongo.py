@@ -22,11 +22,12 @@ class DataBaseSetup():
         #self.collections = {self.total_cases_collection: "https://covid.ourworldindata.org/data/ecdc/total_cases.csv", self.total_deaths_collection: "https://covid.ourworldindata.org/data/ecdc/total_deaths.csv", self.new_cases_collection: "https://covid.ourworldindata.org/data/ecdc/new_cases.csv", self.new_deaths_collection: "https://covid.ourworldindata.org/data/ecdc/new_deaths.csv"}
     
     def drop_data(self):
-        result = self.total_cases_collection.remove()
+        result = self.total_cases_collection.drop()
         #print("removing...", result)
-        self.total_deaths_collection.remove()
-        self.new_cases_collection.remove()
-        self.new_deaths_collection.remove()
+        self.total_deaths_collection.drop()
+        self.new_cases_collection.drop()
+        self.new_deaths_collection.drop()
+        self.coords_collection.drop()
 
     def load_collections(self, collection_name, url):
         df = pd.read_csv(url)
@@ -48,7 +49,7 @@ class DataBaseSetup():
             try:
                 latt = df.loc[country][1]
                 longg = df.loc[country][0]
-                self.coords_collection.insert_one({"name": {country:[latt, longg]}})
+                self.coords_collection.insert_one({"_id": country, "latitude": latt, "longitude": longg})
                 
             except Exception:
                 pass

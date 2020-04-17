@@ -5,6 +5,10 @@ const mongo = require('mongodb').MongoClient;
 
 var url = "mongodb+srv://maurawins:coronabigdata@cluster0-ud77s.gcp.mongodb.net/test?retryWrites=true&w=majority";
 
+const sleep = (milliseconds) => {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
+  }
+
 // Connect to the db
 mongo.connect(url,  { useNewUrlParser: true, useUnifiedTopology: true }, function(err, db) {
     if(err) {
@@ -14,7 +18,6 @@ mongo.connect(url,  { useNewUrlParser: true, useUnifiedTopology: true }, functio
 
     // GET daily updates on case totals by country
     app.get('/data', (req, res) => {
-        console.log(req.query)
 
         // get todays date
         var today = new Date();
@@ -27,25 +30,45 @@ mongo.connect(url,  { useNewUrlParser: true, useUnifiedTopology: true }, functio
         var dbo = db.db("corona_virus_data");
         var query = {date: "2020-04-15"};
 
+
+        var result = {}
         // get most recent data
         dbo.collection(req.query.type).find(query).toArray()
         .then(recentData => {
 
-            var result = {}
 
-            // make json usable (should probably make this a function)
+            // TODO: CLEAN ALL THESE VARIABLES UP
+            // // make json usable (should probably make this a function)
             var stringobj = JSON.stringify(recentData);
             stringobj = stringobj.substring(1, stringobj.length-1)
-            var jsonobj = JSON.parse(stringobj)
+            recentData = JSON.parse(stringobj)
 
-            // create json for react
-            var count = 0;
-            for (country in jsonobj) {
-                result[count] = {"name": country, "cases": jsonobj[country]}
-                count++;
+            var counter = 0;
+
+            for (country in recentData) {
+                dbo.collection("coordinates").find({_id: country}).toArray()
+                .then(coords => {
+                    try {
+                        // make json usable (should probably make this a function)
+                        var stringobj2 = JSON.stringify(coords);
+                        stringobj2 = stringobj2.substring(1, stringobj2.length-1)
+                        coords = JSON.parse(stringobj2)
+
+                        result[counter] = {"country": coords._id, "coordinates": [coords.latitude,coords.longitude], "stat": recentData[coords._id]}
+                        counter++;
+                        
+                    } catch {
+                        console.log("Country not found.")
+                    }
+                    
+                })
             }
 
-            res.status(200).send(result);            
+            sleep(2500).then(() => {
+                res.status(200).send(result);  
+              })
+            
+                      
         })
         .catch(error => console.error(error))
     }); 
