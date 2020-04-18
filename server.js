@@ -1,20 +1,13 @@
-// import mongoDB from './server/mongoFacade'
+const {mongoConnector, mongoDB} = require('./server/mongoFacade.js')
 const express = require('express')
 const app = express()
 const port = 3000
-const mongo = require('mongodb').MongoClient;
+
 
 const sleep = (milliseconds) => {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
 }
 
-var url ="mongodb+srv://maurawins:coronabigdata@cluster0-ud77s.gcp.mongodb.net/test?retryWrites=true&w=majority"
-
-function jsonify(data) {
-    var stringobj = JSON.stringify(data);
-    stringobj = stringobj.substring(1, stringobj.length-1)
-    return JSON.parse(stringobj)
-}
 
 function getTodaysDate() {
     // get todays date
@@ -23,49 +16,6 @@ function getTodaysDate() {
     var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
     var yyyy = today.getFullYear();
     return yyyy + '-' + mm + '-' + dd;
-}
-
-
-class mongoConnector {
-    
-    constructor() {
-        this.url ="mongodb+srv://maurawins:coronabigdata@cluster0-ud77s.gcp.mongodb.net/test?retryWrites=true&w=majority";
-    }
-
-    connect(callback) {
-        mongo.connect(this.url,  { useNewUrlParser: true, useUnifiedTopology: true }, function(err, db) {
-            if(err) {
-                console.log('Sorry unable to connect to MongoDB Error:', err);
-                return;
-            } 
-            console.log("Connected to mongodb");
-            
-            callback(err, db);
-        });    
-    }
-}
-
-class mongoDB {
-    
-    constructor(db) {
-        this.db = db;
-        this.dbName = "corona_virus_data"
-        this.instance = this.db.db(this.dbName);
-    }
-
-    get(collection, query, callback) {
-        this.instance.collection(collection).find(query).toArray()
-        .then(data => {
-            try {
-                data = jsonify(data);
-            } catch {
-                // this is expected to happen when empty data is returned
-            }
-            callback(data)
-           
-        })
-        .catch(error => console.error(error))
-    }
 }
 
 var connector = new mongoConnector();
@@ -78,7 +28,6 @@ connector.connect(function(err,db) {
     app.get('/data', (req, res) => {
         var result = {}
 
-       
         // build query
         var date = getTodaysDate();
         var query = {date: '2020-04-15'};
@@ -87,8 +36,8 @@ connector.connect(function(err,db) {
         db.get(req.query.type, query, function(recentData) {
             result[0] = {"country": "World", "stat": recentData["World"]}
             var counter = 1;
+            console.log(recentData)
             for (let country in recentData) {
-
                 // get coordinates for each country
                 db.get("coordinates", {_id: country}, function(coords) {
                     try {
