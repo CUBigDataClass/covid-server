@@ -1,8 +1,15 @@
 const {mongoConnector, mongoDB} = require('./server/mongoFacade.js')
 const express = require('express')
 const app = express()
-const port = 3000
+const port = 3001
 
+// allow cross-origin requests
+let allowCrossDomain = function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', "*");
+    res.header('Access-Control-Allow-Headers', "*");
+    next();
+  }
+app.use(allowCrossDomain);
 
 const sleep = (milliseconds) => {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
@@ -26,15 +33,15 @@ connector.connect(function(err,db) {
 
     // GET daily updates on case totals by country
     app.get('/data', (req, res) => {
-        var result = {}
-
         // build query
+        var result = []
         var date = getTodaysDate();
         var query = {date: '2020-04-15'};
 
         // get data on all countries for a given date
         db.get(req.query.type, query, function(recentData) {
-            result[0] = {"country": "World", "stat": recentData["World"]}
+            //result.push({"country": "World", "stat": recentData["World"]})
+            
             var counter = 1;
             console.log(recentData)
             for (let country in recentData) {
@@ -42,7 +49,7 @@ connector.connect(function(err,db) {
                 db.get("coordinates", {_id: country}, function(coords) {
                     try {
                         if (coords._id != undefined) {
-                            result[counter] = {"country": coords._id, "coordinates": [coords.latitude,coords.longitude], "stat": recentData[coords._id]}
+                            result.push({"country": coords._id, "coordinates": [coords.latitude,coords.longitude], "stat": recentData[coords._id]})
                             counter++;
                         }
                     } catch {
@@ -54,7 +61,7 @@ connector.connect(function(err,db) {
 
         // temporary sleep function bc figuring out async java promises can wait til later
         sleep(3000).then(() => {
-            res.status(200).send(result);
+            res.status(200).send({result});
         })
         
         
