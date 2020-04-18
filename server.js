@@ -53,31 +53,16 @@ class mongoDB {
         this.instance = this.db.db(this.dbName);
     }
 
-    retrieveDataFor(result, type, date) {
-        this.instance.collection(type).find(date).toArray()
-        .then(recentData => {
-            // TODO: CLEAN ALL THESE VARIABLES UP
-            // // make json usable (should probably make this a function)
-            recentData = jsonify(recentData);
-
-            var counter = 0;
-            console.log(recentData)
-            for (let country in recentData) {
-                console.log(country)
-                this.instance.collection("coordinates").find({_id: country}).toArray()
-                .then(coords => {
-                    try {
-                        // make json usable (should probably make this a function)
-                        coords = jsonify(coords)
-
-                        result[counter] = {"country": coords._id, "coordinates": [coords.latitude,coords.longitude], "stat": recentData[coords._id]}
-                        counter++;
-
-                    } catch {
-                        console.log("Country not found.")
-                    }
-                })
-            }                  
+    get(collection, query, callback) {
+        this.instance.collection(collection).find(query).toArray()
+        .then(data => {
+            try {
+                data = jsonify(data);
+            } catch {
+                // this is expected to happen when empty data is returned
+            }
+            callback(data)
+           
         })
         .catch(error => console.error(error))
     }
@@ -96,33 +81,42 @@ connector.connect(function(err,db) {
        
         // build query
         var date = getTodaysDate();
-        var query = {date: '2020-04-16'};
+        var query = {date: '2020-04-15'};
 
-        // get most recent data
-        db.retrieveDataFor(result, req.query.type, query);
+        // get data on all countries for a given date
+        db.get(req.query.type, query, function(recentData) {
+            result[0] = {"country": "World", "stat": recentData["World"]}
+            var counter = 1;
+            for (let country in recentData) {
+
+                // get coordinates for each country
+                db.get("coordinates", {_id: country}, function(coords) {
+                    try {
+                        if (coords._id != undefined) {
+                            result[counter] = {"country": coords._id, "coordinates": [coords.latitude,coords.longitude], "stat": recentData[coords._id]}
+                            counter++;
+                        }
+                    } catch {
+                        //console.log("Country not found.")
+                    }
+                })
+            }
+        });
+
+        // temporary sleep function bc figuring out async java promises can wait til later
         sleep(3000).then(() => {
-            res.status(200).send(result);; 
+            res.status(200).send(result);
         })
         
         
     }); 
-    
-    //  // GET coordinates for country
-    //  app.get('/coords', (req, res) => {
 
-    //     var result = {}
-
-    //     // build query
-    //     var dbo = db.db("corona_virus_data");
-        
-    //     // get coords from mongo
-    //     dbo.collection("coordinates").find({}).toArray()
-    //     .then(recentData => {
-    //         res.status(200).send(recentData);
-    //     })
-    //     .catch(error => console.error(error))
-    // }); 
-
+    app.get('/coords', (req, res) => {
+        db.get("total_cases", {date: '2020-04-15'}, function(results) {
+            res.status(200).send(results);
+        });
+       
+    });
 });
 
 app.get('/', (req, res) => res.send('Hello World!'))
