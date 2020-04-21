@@ -30,6 +30,13 @@ var connector = new mongoConnector();
 connector.connect(function(err,db) {
 
     db = new mongoDB(db);
+    app.get('/data_nocoords', (req, res) => {
+        db.get(req.query.type, {date: '2020-04-15'}, function(results) {
+            
+            res.status(200).send(results);
+           
+        });
+    });
 
     // GET daily updates on case totals by country
     app.get('/data', (req, res) => {
