@@ -16,12 +16,15 @@ const sleep = (milliseconds) => {
 }
 
 
-function getTodaysDate() {
+function getYesterdaysDate() {
     // get todays date
     var today = new Date();
-    var dd = String(today.getDate()).padStart(2, '0');
-    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-    var yyyy = today.getFullYear();
+    var yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    var dd = String(yesterday.getDate()).padStart(2, '0');
+    var mm = String(yesterday.getMonth() + 1).padStart(2, '0'); //January is 0!
+    var yyyy = yesterday.getFullYear();
     return yyyy + '-' + mm + '-' + dd;
 }
 
@@ -30,8 +33,10 @@ var connector = new mongoConnector();
 connector.connect(function(err,db) {
 
     db = new mongoDB(db);
+    var date = getYesterdaysDate()
+    var query = {date: date};
     app.get('/data_nocoords', (req, res) => {
-        db.get(req.query.type, {date: '2020-04-15'}, function(results) {
+        db.get(req.query.type, query, function(results) {
             
             res.status(200).send(results);
            
@@ -42,8 +47,8 @@ connector.connect(function(err,db) {
     app.get('/data', (req, res) => {
         // build query
         var result = []
-        var date = getTodaysDate();
-        var query = {date: '2020-04-15'};
+        var date = getYesterdaysDate();
+        var query = {date: date};
 
         // get data on all countries for a given date
         db.get(req.query.type, query, function(recentData) {
