@@ -40,35 +40,16 @@ connector.connect(function(err,db) {
 
         // get data on all countries for a given date
         db.get(req.query.type, query, function(recentData) {
-            //result.push({"country": "World", "stat": recentData["World"]})
-            
-            var counter = 1;
-            console.log(recentData)
             for (let country in recentData) {
-                // get coordinates for each country
-                db.get("coordinates", {_id: country}, function(coords) {
-                    try {
-                        if (coords._id != undefined) {
-                            result.push({"country": coords._id, "coordinates": [coords.latitude,coords.longitude], "stat": recentData[coords._id]})
-                            counter++;
-                        }
-                    } catch {
-                        //console.log("Country not found.")
-                    }
-                })
+                result.push({"country": country, "stat": recentData[country]})
             }
-        });
 
-        // temporary sleep function bc figuring out async java promises can wait til later
-        sleep(3000).then(() => {
-            res.status(200).send({result});
-        })
-        
-        
+            res.status(200).send(result);
+        });        
     }); 
 
     app.get('/coords', (req, res) => {
-        db.get("total_cases", {date: '2020-04-15'}, function(results) {
+        db.get("coordinates", {}, function(results) {
             res.status(200).send(results);
         });
        
