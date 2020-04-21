@@ -54,6 +54,14 @@ connector.connect(function(err,db) {
         });
        
     });
+
+
+    app.get('/timeline', (req, res) => {
+        db.get(req.query.type, {}, function(results) {
+            res.status(200).send(results);
+        });
+       
+    });
 });
 
 app.get('/', (req, res) => res.send('Hello World!'))
