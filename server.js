@@ -1,7 +1,7 @@
 const {mongoConnector, mongoDB} = require('./server/mongoFacade.js')
 const express = require('express')
 const app = express()
-const port = 3001
+const port = '35.193.65.75'
 
 // allow cross-origin requests
 let allowCrossDomain = function(req, res, next) {
