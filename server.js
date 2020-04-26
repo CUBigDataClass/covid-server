@@ -20,7 +20,7 @@ function getYesterdaysDate() {
     // get todays date
     var today = new Date();
     var yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setDate(yesterday.getDate() - 3);
 
     var dd = String(yesterday.getDate()).padStart(2, '0');
     var mm = String(yesterday.getMonth() + 1).padStart(2, '0'); //January is 0!
@@ -36,6 +36,7 @@ connector.connect(function(err,db) {
     var date = getYesterdaysDate()
     var query = {date: date};
     app.get('/data_nocoords', (req, res) => {
+	   console.log('hit')
         db.get(req.query.type, query, function(results) {
             
             res.status(200).send(results);
