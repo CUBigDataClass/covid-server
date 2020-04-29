@@ -1,7 +1,6 @@
 const {mongoConnector, mongoDB} = require('./server/mongoFacade.js')
 const express = require('express')
 const app = express()
-var https = require('https')
 const port = 3001
 
 // allow cross-origin requests
@@ -79,8 +78,4 @@ connector.connect(function(err,db) {
 
 app.get('/', (req, res) => res.send('Hello World!'))
 
-https.createServer({
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.cert')
-  }, app)
-.listen(port, () => console.log(`Example app listening on port ${port}!`))
+app.listen(port, () => console.log(`Example app listening on port ${port}!`))
