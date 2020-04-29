@@ -78,9 +78,3 @@ connector.connect(function(err,db) {
 });
 
 app.get('/', (req, res) => res.send('Hello World!'))
-
-https.createServer({
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.cert')
-  }, app)
-.listen(port, () => console.log(`Example app listening on port ${port}!`))
